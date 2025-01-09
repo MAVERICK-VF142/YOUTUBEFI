@@ -7,7 +7,7 @@ import urllib.request
 app = Flask(__name__)
 
 # Replace with your YouTube API key
-YOUTUBE_API_KEY = "AIzaSyBLfI2XA8tf117EhjQ3BzPX1rYlTPliBBI"
+YOUTUBE_API_KEY = "AIzaSyDIsC4hA1Q86RIs27-53u7yA66yfhkOEKI"
 
 # YouTube Search Function
 def search_youtube(query):
