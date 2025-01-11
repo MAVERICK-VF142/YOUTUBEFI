@@ -50,6 +50,7 @@ def play():
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True
+        'cookiefile': './static/youtube.com_cookies.txt',  # Path to your cookies.txt file
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -69,6 +70,7 @@ def download():
         'format': 'bestaudio/best',
         'quiet': True,
         'outtmpl': f'static/{video_id}.mp3',  # Save audio to the static folder with the video ID as the filename
+        'cookiefile': './static/youtube.com_cookies.txt',  # Path to your cookies.txt file
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
