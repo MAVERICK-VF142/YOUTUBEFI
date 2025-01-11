@@ -49,7 +49,7 @@ def play():
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     ydl_opts = {
         'format': 'bestaudio/best',
-        'quiet': True
+        'quiet': True,
         'cookiefile': './static/youtube.com_cookies.txt',  # Path to your cookies.txt file
     }
 
