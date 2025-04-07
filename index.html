@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brave YouTube Music Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      margin: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+    }
+    input {
+      width: 60%;
+    }
+    button {
+      background-color: #1db954;
+      color: white;
+      cursor: pointer;
+    }
+    iframe {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 640px;
+      height: 360px;
+      border: none;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 2rem;
+    }
+    li {
+      margin: 0.3rem;
+      background: #333;
+      padding: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    li:hover {
+      background: #444;
+    }
+    .playlist-title {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: #1db954;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎶 Brave YouTube Music Player</h1>
+  <input id="ytInput" placeholder="Paste YouTube URL or Video ID" />
+  <button onclick="play()">▶️ Play</button>
+  <button onclick="addToPlaylist()">➕ Add to Playlist</button>
+
+  <iframe id="ytFrame" allow="autoplay"></iframe>
+
+  <div class="playlist-title">My Playlist</div>
+  <ul id="playlist"></ul>
+
+  <script>
+    let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+
+    function extractVideoId(input) {
+      if (input.includes('v=')) return input.split('v=')[1].split('&')[0];
+      if (input.includes('youtu.be/')) return input.split('youtu.be/')[1].split('?')[0];
+      return input;
+    }
+
+    function play(videoId = null) {
+      const input = document.getElementById('ytInput').value;
+      const id = videoId || extractVideoId(input);
+      document.getElementById('ytFrame').src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
+    }
+
+    function addToPlaylist() {
+      const input = document.getElementById('ytInput').value;
+      const id = extractVideoId(input);
+      playlist.push(id);
+      localStorage.setItem('playlist', JSON.stringify(playlist));
+      renderPlaylist();
+    }
+
+    function renderPlaylist() {
+      const ul = document.getElementById('playlist');
+      ul.innerHTML = '';
+      playlist.forEach((id, index) => {
+        const li = document.createElement('li');
+        li.textContent = `🎵 ${id}`;
+        li.onclick = () => play(id);
+        ul.appendChild(li);
+      });
+    }
+
+    renderPlaylist();
+  </script>
+</body>
+</html>

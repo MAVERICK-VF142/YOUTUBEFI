@@ -1,3 +1,0 @@
-Flask
-yt-dlp
-google-api-python-client
