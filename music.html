@@ -196,6 +196,54 @@
   cursor: pointer;
 }
 
+.fullscreen-player {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #121212;
+  color: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.fs-header {
+  padding: 16px;
+  text-align: left;
+}
+
+.fs-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  touch-action: pan-y;
+}
+
+.fs-body img {
+  width: 60%;
+  max-width: 300px;
+  border-radius: 16px;
+}
+
+.fs-info {
+  text-align: center;
+}
+
+.fs-controls button {
+  margin: 0 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+
 
     @media (min-width: 768px) {
       .card {
@@ -240,18 +288,22 @@
   </div>
 </section>
 
-<div id="fullPlayer" class="full-player" style="display: none;">
-  <div class="full-header">
-    <button onclick="collapseFullPlayer()">⬅ Back</button>
+<section id="fullScreenPlayer" class="fullscreen-player" style="display: none;">
+  <div class="fs-header">
+    <button onclick="collapsePlayer()">⬅ Back</button>
   </div>
-  <div class="full-body" id="swipeArea">
-    <img id="fullThumb" src="" alt="Thumbnail" />
-    <div class="info">
-      <h2 id="fullTitle">Title</h2>
-      <p id="fullChannel">Channel</p>
+  <div class="fs-body" id="fsSwipeArea">
+    <img id="fsThumb" src="" />
+    <div class="fs-info">
+      <h2 id="fsTitle">Title</h2>
+      <p id="fsChannel">Channel</p>
+    </div>
+    <div class="fs-controls">
+      <button onclick="playPrevious()">⏮</button>
+      <button onclick="togglePlayback()" id="fsPlayIcon">⏸</button>
+      <button onclick="playNext()">⏭</button>
     </div>
   </div>
-</div>
 
 
 
