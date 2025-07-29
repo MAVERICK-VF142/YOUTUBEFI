@@ -219,9 +219,12 @@
         <div id="barTitle">Title</div>
         <div id="barChannel">Channel</div>
       </div>
-      <div class="play-toggle" onclick="togglePlayback()">
-        <span id="barPlayIcon">⏸</span>
-      </div>
+  <div style="display: flex; gap: 16px; align-items: center;">
+  <span class="play-toggle" onclick="playPrev()">⏮</span>
+  <span class="play-toggle" onclick="togglePlayback()"><span id="barPlayIcon">⏸</span></span>
+  <span class="play-toggle" onclick="playNext()">⏭</span>
+</div>
+
     </section>
 
     <div id="ytFrameContainer"></div>
