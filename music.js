@@ -8,6 +8,7 @@ const firebaseConfig = {
   appId: "1:703435050654:web:d97572b99fd5fa9f5af58f"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -15,11 +16,11 @@ const db = firebase.firestore();
 let currentUser = null;
 const apiKey = "AIzaSyDIsC4hA1Q86RIs27-53u7yA66yfhkOEKI";
 
-let currentIndex = 0;
 let currentPlaylist = [];
-let isPlaying = false;
+let currentIndex = -1;
+let player;
 
-// Auth check
+// Check Auth State
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "index.html";
@@ -29,40 +30,66 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-// --- PLAYBACK FUNCTIONS ---
-function play(videoId, index = null) {
-  const player = document.getElementById('ytFrame');
-  player.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
-  isPlaying = true;
+// Load YouTube IFrame API
+let tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+document.body.appendChild(tag);
 
-  if (index !== null) {
-    currentIndex = index;
-    updateStickyBar(currentPlaylist[currentIndex]);
-    updateFullScreenPlayer(currentPlaylist[currentIndex]);
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('ytFrameContainer', {
+    height: '220',
+    width: '100%',
+    videoId: '',
+    playerVars: { autoplay: 1 },
+    events: {
+      onReady: () => {},
+      onStateChange: onPlayerStateChange
+    }
+  });
+}
+
+function onPlayerStateChange(event) {
+  const playIcon = document.getElementById('barPlayIcon');
+  if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+    playIcon.textContent = '▶';
+  } else if (event.data === YT.PlayerState.PLAYING) {
+    playIcon.textContent = '⏸';
   }
-  updatePlayPauseButtons();
+}
+
+function play(videoId) {
+  const index = currentPlaylist.findIndex(v => v.videoId === videoId);
+  if (index !== -1) {
+    currentIndex = index;
+  }
+
+  if (player && player.loadVideoById) {
+    player.loadVideoById(videoId);
+    document.getElementById('barPlayIcon').textContent = '⏸';
+    document.getElementById('stickyBar').style.display = 'flex';
+    updateStickyBar(currentPlaylist[currentIndex]);
+  }
 }
 
 function togglePlayback() {
-  const player = document.getElementById('ytFrame');
-  const src = player.src;
+  if (!player || typeof player.getPlayerState !== 'function') return;
+  const state = player.getPlayerState();
+  const playIcon = document.getElementById('barPlayIcon');
 
-  if (isPlaying) {
-    player.src = src.replace("autoplay=1", "autoplay=0");
-    isPlaying = false;
-  } else {
-    player.src = src.replace("autoplay=0", "autoplay=1");
-    isPlaying = true;
+  if (state === YT.PlayerState.PLAYING) {
+    player.pauseVideo();
+    playIcon.textContent = '▶';
+  } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED) {
+    player.playVideo();
+    playIcon.textContent = '⏸';
   }
-
-  updatePlayPauseButtons();
 }
 
 function playNext() {
   if (currentIndex < currentPlaylist.length - 1) {
     currentIndex++;
     const video = currentPlaylist[currentIndex];
-    play(video.videoId, currentIndex);
+    play(video.videoId);
   }
 }
 
@@ -70,116 +97,18 @@ function playPrevious() {
   if (currentIndex > 0) {
     currentIndex--;
     const video = currentPlaylist[currentIndex];
-    play(video.videoId, currentIndex);
+    play(video.videoId);
   }
 }
 
-function updatePlayPauseButtons() {
-  const icon = document.getElementById("fsPlayIcon");
-  if (icon) icon.textContent = isPlaying ? "⏸" : "▶";
-}
-
-// --- STICKY BAR ---
 function updateStickyBar(video) {
-  const bar = document.getElementById("stickyBar");
-  if (!bar) return;
-  bar.style.display = "flex";
-  document.getElementById("stickyThumb").src = video.thumbnail;
-  document.getElementById("stickyTitle").textContent = video.title;
+  if (!video) return;
+  document.getElementById('barThumb').src = video.thumbnail;
+  document.getElementById('barTitle').textContent = video.title;
+  document.getElementById('barChannel').textContent = video.channel;
 }
 
-// --- FULLSCREEN PLAYER ---
-function updateFullScreenPlayer(video) {
-  document.getElementById("fsThumb").src = video.thumbnail;
-  document.getElementById("fsTitle").textContent = video.title;
-  document.getElementById("fsChannel").textContent = video.channel;
-}
-
-function collapsePlayer() {
-  document.getElementById('fullScreenPlayer').style.display = 'none';
-}
-
-// --- SWIPE CONTROLS ---
-let touchStartX = 0;
-
-document.getElementById('fsSwipeArea').addEventListener('touchstart', (e) => {
-  touchStartX = e.touches[0].clientX;
-});
-
-document.getElementById('fsSwipeArea').addEventListener('touchend', (e) => {
-  const touchEndX = e.changedTouches[0].clientX;
-  const deltaX = touchEndX - touchStartX;
-
-  if (deltaX > 50) playPrevious();
-  else if (deltaX < -50) playNext();
-});
-
-// --- SEARCH ---
-async function searchYouTube() {
-  const query = document.getElementById('searchInput').value;
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${apiKey}&maxResults=10&type=video`;
-
-  const res = await fetch(url);
-  const data = await res.json();
-  renderResults(data.items);
-}
-
-function renderResults(items) {
-  const resultsDiv = document.getElementById('results');
-  resultsDiv.innerHTML = '';
-
-  items.forEach(item => {
-    const video = {
-      videoId: item.id.videoId,
-      title: item.snippet.title,
-      channel: item.snippet.channelTitle,
-      thumbnail: item.snippet.thumbnails.medium.url
-    };
-
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <img src="${video.thumbnail}" alt="Thumbnail" />
-      <div class="card-title">${video.title}</div>
-      <div class="card-subtitle">${video.channel}</div>
-      <button class="btn" onclick='addToPlaylist(${JSON.stringify(video)})'>➕</button>
-    `;
-    card.addEventListener('click', () => {
-      const index = currentPlaylist.findIndex(v => v.videoId === video.videoId);
-      play(video.videoId, index);
-    });
-    resultsDiv.appendChild(card);
-  });
-}
-
-// --- PLAYLIST ---
-async function loadPlaylist() {
-  const container = document.getElementById('playlist');
-  container.innerHTML = '';
-
-  const doc = await db.collection("users").doc(currentUser.uid).get();
-  if (!doc.exists) return;
-
-  currentPlaylist = doc.data().playlist || [];
-
-  currentPlaylist.forEach((video, index) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <img src="${video.thumbnail}" alt="Thumbnail" />
-      <div class="card-title">${video.title}</div>
-      <div class="card-subtitle">${video.channel}</div>
-      <button class="btn" onclick='removeFromPlaylist("${video.videoId}")'>❌</button>
-    `;
-    card.addEventListener('click', () => play(video.videoId, index));
-    container.appendChild(card);
-  });
-
-  if (currentPlaylist.length > 0) {
-    updateStickyBar(currentPlaylist[0]);
-  }
-}
-
+// Add video to playlist
 async function addToPlaylist(video) {
   const userRef = db.collection("users").doc(currentUser.uid);
   const doc = await userRef.get();
@@ -192,6 +121,7 @@ async function addToPlaylist(video) {
   }
 }
 
+// Remove video from playlist
 async function removeFromPlaylist(videoId) {
   const userRef = db.collection("users").doc(currentUser.uid);
   const doc = await userRef.get();
@@ -200,4 +130,67 @@ async function removeFromPlaylist(videoId) {
   playlist = playlist.filter(video => video.videoId !== videoId);
   await userRef.set({ playlist });
   loadPlaylist();
+}
+
+// Search YouTube
+async function searchYouTube() {
+  const query = document.getElementById('searchInput').value;
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${apiKey}&maxResults=10&type=video`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  renderResults(data.items);
+}
+
+// Render search results
+function renderResults(items) {
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML = '';
+
+  const videos = items.map(item => ({
+    videoId: item.id.videoId,
+    title: item.snippet.title,
+    channel: item.snippet.channelTitle,
+    thumbnail: item.snippet.thumbnails.medium.url
+  }));
+
+  currentPlaylist = videos;
+
+  videos.forEach(video => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="${video.thumbnail}" alt="Thumbnail" />
+      <div class="card-title">${video.title}</div>
+      <div class="card-subtitle">${video.channel}</div>
+      <button class="btn" onclick='play("${video.videoId}")'>▶</button>
+      <button class="btn" onclick='addToPlaylist(${JSON.stringify(video)})'>➕</button>
+    `;
+    resultsDiv.appendChild(card);
+  });
+}
+
+// Render playlist
+async function loadPlaylist() {
+  const container = document.getElementById('playlist');
+  container.innerHTML = '';
+
+  const doc = await db.collection("users").doc(currentUser.uid).get();
+  if (!doc.exists) return;
+
+  const playlist = doc.data().playlist || [];
+  currentPlaylist = playlist;
+
+  playlist.forEach(video => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="${video.thumbnail}" alt="Thumbnail" />
+      <div class="card-title">${video.title}</div>
+      <div class="card-subtitle">${video.channel}</div>
+      <button class="btn" onclick='play("${video.videoId}")'>▶</button>
+      <button class="btn" onclick='removeFromPlaylist("${video.videoId}")'>❌</button>
+    `;
+    container.appendChild(card);
+  });
 }
