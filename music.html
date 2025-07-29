@@ -5,7 +5,9 @@
   <title>🎧 Youtify Music Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="music.css">
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <link rel="stylesheet" href="music.css" />
+
   <style>
     :root {
       --primary-color: #1db954;
@@ -32,10 +34,6 @@
       height: 100vh;
       overflow: hidden;
       flex-direction: column;
-    }
-
-    .sidebar {
-      display: none;
     }
 
     .top-bar {
@@ -78,20 +76,6 @@
       overflow-y: auto;
     }
 
-    .player {
-      display: flex;
-      justify-content: center;
-      padding: 12px;
-    }
-
-    #ytFrame {
-      width: 100%;
-      max-width: 700px;
-      height: 220px;
-      border: none;
-      border-radius: 12px;
-    }
-
     h3 {
       color: var(--primary-color);
       margin: 16px;
@@ -124,7 +108,6 @@
 
     .card img {
       width: 100%;
-      height: auto;
       border-radius: 8px;
     }
 
@@ -135,22 +118,79 @@
       color: white;
     }
 
-    .card-subtitle {
+    .card-channel {
       font-size: 11px;
       color: var(--text-muted);
+    }
+
+    .btn {
+      margin-top: 4px;
+      width: 100%;
+      padding: 6px;
+      border: none;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #ytFrameContainer {
+      display: none;
+    }
+
+    .sticky-player-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #181818;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      z-index: 999;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.5);
+      gap: 12px;
+      display: none;
+    }
+
+    .sticky-player-bar img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .track-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #barTitle {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #barChannel {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .play-toggle {
+      font-size: 20px;
+      cursor: pointer;
     }
 
     @media (min-width: 768px) {
       .card {
         width: 160px;
       }
-
-      #ytFrame {
-        height: 400px;
-      }
     }
   </style>
 </head>
+
 <body>
   <div class="app-container">
     <header class="top-bar">
@@ -161,10 +201,6 @@
     </header>
 
     <main class="main-content">
-      <section class="player">
-        <iframe id="ytFrame" allow="autoplay" allowfullscreen></iframe>
-      </section>
-
       <section>
         <h3>Search Results</h3>
         <div class="carousel" id="results"></div>
@@ -175,6 +211,20 @@
         <div class="carousel" id="playlist"></div>
       </section>
     </main>
+
+    <!-- Sticky bottom player -->
+    <section class="sticky-player-bar" id="stickyBar">
+      <img id="barThumb" src="" alt="Thumb" />
+      <div class="track-info">
+        <div id="barTitle">Title</div>
+        <div id="barChannel">Channel</div>
+      </div>
+      <div class="play-toggle" onclick="togglePlayback()">
+        <span id="barPlayIcon">⏸</span>
+      </div>
+    </section>
+
+    <div id="ytFrameContainer"></div>
   </div>
 
   <!-- Firebase -->
@@ -182,7 +232,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-  <!-- JS Logic -->
   <script src="music.js"></script>
 </body>
 </html>
