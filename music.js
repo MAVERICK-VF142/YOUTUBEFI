@@ -193,22 +193,4 @@ async function loadPlaylist() {
     `;
     container.appendChild(card);
   });
-
-  document.getElementById('stickyBar').addEventListener('click', openFullPlayer);
-
-function openFullPlayer() {
-  document.getElementById('fullPlayer').style.display = 'flex';
-  const currentVideo = currentPlaylist[currentIndex];
-  if (currentVideo) {
-    document.getElementById('fullThumb').src = currentVideo.thumbnail;
-    document.getElementById('fullTitle').textContent = currentVideo.title;
-    document.getElementById('fullChannel').textContent = currentVideo.channel;
-  }
-}
-
-function collapseFullPlayer() {
-  document.getElementById('fullPlayer').style.display = 'none';
-}
-
-
 }
