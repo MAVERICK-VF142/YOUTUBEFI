@@ -183,6 +183,20 @@
       cursor: pointer;
     }
 
+    .controls {
+  display: flex;
+  gap: 10px;
+}
+
+.controls button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+
     @media (min-width: 768px) {
       .card {
         width: 160px;
@@ -213,19 +227,19 @@
     </main>
 
     <!-- Sticky bottom player -->
-    <section class="sticky-player-bar" id="stickyBar">
-      <img id="barThumb" src="" alt="Thumb" />
-      <div class="track-info">
-        <div id="barTitle">Title</div>
-        <div id="barChannel">Channel</div>
-      </div>
-  <div style="display: flex; gap: 16px; align-items: center;">
-  <span class="play-toggle" onclick="playPrev()">⏮</span>
-  <span class="play-toggle" onclick="togglePlayback()"><span id="barPlayIcon">⏸</span></span>
-  <span class="play-toggle" onclick="playNext()">⏭</span>
-</div>
+<section class="sticky-player-bar" id="stickyBar" style="display:none">
+  <img id="barThumb" src="" alt="Thumb" />
+  <div class="track-info">
+    <div id="barTitle">Title</div>
+    <div id="barChannel">Channel</div>
+  </div>
+  <div class="controls">
+    <button onclick="playPrevious()">⏮</button>
+    <button onclick="togglePlayback()" id="barPlayIcon">⏸</button>
+    <button onclick="playNext()">⏭</button>
+  </div>
+</section>
 
-    </section>
 
     <div id="ytFrameContainer"></div>
   </div>
