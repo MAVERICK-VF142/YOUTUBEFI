@@ -210,36 +210,5 @@ function collapseFullPlayer() {
   document.getElementById('fullPlayer').style.display = 'none';
 }
 
-let touchStartX = 0;
-
-const swipeArea = document.getElementById('swipeArea');
-
-swipeArea.addEventListener('touchstart', e => {
-  touchStartX = e.changedTouches[0].screenX;
-});
-
-swipeArea.addEventListener('touchend', e => {
-  const touchEndX = e.changedTouches[0].screenX;
-  const diff = touchStartX - touchEndX;
-
-  if (diff > 50) {
-    // Swipe Left
-    playNext();
-    updateFullPlayer();
-  } else if (diff < -50) {
-    // Swipe Right
-    playPrevious();
-    updateFullPlayer();
-  }
-});
-
-function updateFullPlayer() {
-  const currentVideo = currentPlaylist[currentIndex];
-  if (currentVideo) {
-    document.getElementById('fullThumb').src = currentVideo.thumbnail;
-    document.getElementById('fullTitle').textContent = currentVideo.title;
-    document.getElementById('fullChannel').textContent = currentVideo.channel;
-  }
-}
 
 }
